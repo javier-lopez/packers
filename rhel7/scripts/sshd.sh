@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 set -x
 
 echo "Modifying /etc/ssh/sshd_config..."
