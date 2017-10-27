@@ -1,0 +1,75 @@
+{
+    "variables": {
+        "vm_name": "openbsd-6.0-i386-vmware",
+        "iso_url": "http://ftp.openbsd.org/pub/OpenBSD/6.0/i386/install60.iso",
+        "iso_sha256": "88bd535d1f092d9963e2ddd0cccb1218e619a2644602aaf43d75bc5c49788f38",
+        "mirror": "http://ftp.openbsd.org"
+    },
+
+    "builders": [{
+        "type": "vmware-iso",
+        "guest_os_type": "OpenBSD",
+        "vm_name": "{{user `vm_name`}}",
+        "disk_size": "10140",
+        "vmx_data": {
+          "numvcpus": 1,
+          "cpuid.coresPerSocket": 1,
+          "memsize": 384,
+          "ethernet0.virtualDev": "vmxnet3",
+          "virtualHW.version": "11"
+        },
+        "iso_checksum_type": "sha256",
+        "iso_url": "{{user `iso_url`}}",
+        "iso_checksum": "{{user `iso_sha256`}}",
+        "tools_upload_flavor": "linux",
+        "tools_upload_path": "/tmp/vmware_tools_{{.Flavor}}.iso",
+        "ssh_wait_timeout": "20m",
+        "ssh_username": "root",
+        "ssh_password": "vagrant",
+        "shutdown_command": "/sbin/halt -p",
+        "boot_wait": "30s",
+        "ssh_port": 22,
+        "boot_command": [
+            "S<enter>",
+            "cat <<EOF >>install.conf<enter>",
+            "System hostname = openbsd60<enter>",
+            "Password for root = vagrant<enter>",
+            "Setup a user = vagrant<enter>",
+            "Password for user = vagrant<enter>",
+            "Allow root ssh login = yes<enter>",
+            "What timezone are you in = UTC<enter>",
+            "Location of sets = cd<enter>",
+            "Set name(s) = -game*.tgz -x*.tgz<enter>",
+            "Directory does not contain SHA256.sig. Continue without verification = yes<enter>",
+            "EOF<enter>",
+            "install -af install.conf && reboot<enter>"
+        ]
+    }],
+
+    "provisioners": [{
+        "environment_vars": [
+            "MIRROR={{user `mirror`}}",
+            "INSTALL_ANSIBLE=false",
+            "INSTALL_CHEF=false"
+        ],
+
+        "type": "shell",
+        "execute_command": "export {{.Vars}} && cat {{.Path}} | su -m",
+        "scripts": [
+            "scripts/postinstall.sh",
+            "scripts/vagrant.sh",
+            "scripts/sshd.sh",
+            "scripts/virtualbox.sh",
+            "scripts/ansible.sh",
+            "scripts/chef.sh",
+            "scripts/cleanup.sh"
+        ]
+    }],
+
+    "post-processors": [{
+        "type": "vagrant",
+        "output": "{{user `vm_name`}}.box",
+        "vagrantfile_template": "Vagrantfile",
+        "keep_input_artifact": true
+    }]
+}
