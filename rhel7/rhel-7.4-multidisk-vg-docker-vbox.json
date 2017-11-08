@@ -1,0 +1,69 @@
+{
+	"variables": {
+		"vm_name": "rhel-7.4-multidisk-vg-docker-vbox",
+		"iso_url": "{{env `ISO_URL`}}",
+		"iso_sha256": "431a58c8c0351803a608ffa56948c5a7861876f78ccbe784724dd8c987ff7000"
+	},
+
+	"builders": [{
+		"type": "virtualbox-iso",
+		"guest_os_type": "RedHat_64",
+		"vm_name": "{{user `vm_name`}}",
+		"hard_drive_interface": "sata",
+		"disk_size": "80000",
+		"sata_port_count": "30",
+		"vboxmanage": [
+			["modifyvm", "{{.Name}}", "--memory", "1024"],
+			["modifyvm", "{{.Name}}", "--cpus", "2"],
+			["modifyvm", "{{.Name}}", "--ioapic", "on"],
+			["modifyvm", "{{.Name}}", "--pae", "on"],
+			["modifyvm", "{{.Name}}", "--rtcuseutc", "on"],
+			["modifyvm", "{{.Name}}", "--bioslogodisplaytime", "1"],
+
+			["createmedium", "disk", "--format", "VMDK", "--filename", "{{.Name}}-disk002.vmdk", "--size", "30000" ],
+			["storageattach", "{{.Name}}", "--storagectl", "SATA Controller", "--port", "1",
+                            "--type", "hdd", "--medium", "{{.Name}}-disk002.vmdk" ],
+
+			["createmedium", "disk", "--format", "VMDK", "--filename", "{{.Name}}-disk003.vmdk", "--size", "30000" ],
+			["storageattach", "{{.Name}}", "--storagectl", "SATA Controller", "--port", "2",
+                            "--type", "hdd", "--medium", "{{.Name}}-disk003.vmdk" ],
+
+			["createmedium", "disk", "--format", "VMDK", "--filename", "{{.Name}}-disk004.vmdk", "--size", "30000" ],
+			["storageattach", "{{.Name}}", "--storagectl", "SATA Controller", "--port", "3",
+                            "--type", "hdd", "--medium", "{{.Name}}-disk004.vmdk" ]
+		],
+		"iso_checksum_type": "sha256",
+		"iso_url": "{{user `iso_url`}}",
+		"iso_checksum": "{{user `iso_sha256`}}",
+		"http_directory": "http",
+		"ssh_wait_timeout": "20m",
+		"ssh_username": "vagrant",
+		"ssh_password": "vagrant",
+		"shutdown_command": "echo 'vagrant'|sudo -S /sbin/halt -h -p",
+		"boot_wait": "5s",
+		"boot_command": [
+			"<esc><wait>",
+			"vmlinuz initrd=initrd.img net.ifnames=0 biosdevname=0 ",
+			"ks=http://{{.HTTPIP}}:{{.HTTPPort}}/vbox-ks-multidisk.cfg",
+			"<enter>"
+		]
+	}],
+
+	"provisioners": [{
+		"type": "shell",
+		"execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+		"scripts": [
+			"scripts/vagrant.sh",
+			"scripts/sshd.sh",
+			"scripts/virtualbox.sh",
+			"scripts/vg-docker.sh",
+			"scripts/cleanup.sh"
+		]
+	}],
+
+	"post-processors": [{
+		"type": "vagrant",
+		"output": "{{user `vm_name`}}.box",
+		"keep_input_artifact": true
+	}]
+}
