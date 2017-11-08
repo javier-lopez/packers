@@ -12,8 +12,8 @@ sed -i -e '/GRUB_CMDLINE_LINUX/ s:"$: net.ifnames=0":' /etc/default/grub
 ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
 
 #lock root account
-passwd -d root
-passwd -l root
+#passwd -d root
+#passwd -l root
 
 #clean up yum
 rpm --rebuilddb
