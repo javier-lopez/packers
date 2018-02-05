@@ -4,9 +4,9 @@ set -x
 #remove traces of MAC address and UUID from network configuration
 sed -E -i '/^(HWADDR|UUID)/d' /etc/sysconfig/network-scripts/ifcfg-e*
 
-#add net.ifnames to /etc/default/grub and rebuild grub.cfg
+#disable consistent device naming
 sed -i -e '/GRUB_CMDLINE_LINUX/ s:"$: net.ifnames=0":' /etc/default/grub
-/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
+grub2-mkconfig -o /boot/grub2/grub.cfg
 
 #disable udev network rules
 ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
