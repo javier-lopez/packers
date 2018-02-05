@@ -1,0 +1,3 @@
+[submodule "minos"]
+	path = minos
+	url = https://github.com/minos-org/packers
