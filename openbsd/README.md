@@ -15,16 +15,14 @@ need to use e.g. NFS or rsync.
 
 ## Creating the boxes
 
-* Run packer with either the `openbsd-$version-$arch-vbox.json` or `openbsd-$version-$arch-vmware.json` template
-* Add the local box to vagrant
+* Run packer with the desired template
+* Add the box to Vagrant
+* Launch the box
 
 ### Example
 
 ```
 $ packer build openbsd-6.2-amd64-vbox.json
-$ packer build openbsd-6.2-amd64-vmware.json
 $ vagrant box add openbsd-6.2-amd64 ./openbsd-6.2-amd64-vbox.box
-$ vagrant box add openbsd-6.2-amd64 ./openbsd-6.2-amd64-vmware.box
-$ cd .. && $EDITOR VagrantFile
-$ vagrant up
+$ vagrant init openbsd-6.2-amd64 && vagrant up
 ```
